@@ -1,0 +1,68 @@
+;-------------------------------------------------------------------------------
+; MSP430 Assembler Code Template for use with TI Code Composer Studio
+;
+;
+;-------------------------------------------------------------------------------
+            .cdecls C,LIST,"msp430.h"       ; Include device header file
+            
+;-------------------------------------------------------------------------------
+            .def    RESET                   ; Export program entry-point to
+                                            ; make it known to linker.
+;-------------------------------------------------------------------------------
+            .text                           ; Assemble into program memory.
+            .retain                         ; Override ELF conditional linking
+                                            ; and retain current section.
+            .retainrefs                     ; And retain any sections that have
+                                            ; references to current section.
+
+;-------------------------------------------------------------------------------
+RESET       mov.w   #__STACK_END,SP         ; Initialize stackpointer
+StopWDT     mov.w   #WDTPW|WDTHOLD,&WDTCTL  ; Stop watchdog timer
+
+
+;-------------------------------------------------------------------------------
+; Main loop here
+;-------------------------------------------------------------------------------
+			mov.w #021A1h, R4;
+			mov.w #035F1h, R5;
+            mov.w #00001h, R6;
+
+            and R6,R4;
+            and R6,R5;
+
+            cmp R4,R6
+            jeq case1; // case1 when equal
+            jne case2; // jump to case2 if not equal
+            jmp $;
+
+case1:
+            cmp R5,R6;
+            jeq both_equal; // if both is equal go to here
+            jne one_equal; // if only one of the two is equal go to here
+            jmp $;
+both_equal:
+			mov.w #0ff0h, R9;
+			jmp $;
+
+case2:
+			cmp R5,R6;
+			jeq one_equal;
+			jmp $;
+
+one_equal:
+			mov.w #0FFFFh, R10;
+			xor R9,R10;
+			jmp $;
+
+;-------------------------------------------------------------------------------
+; Stack Pointer definition
+;-------------------------------------------------------------------------------
+            .global __STACK_END
+            .sect   .stack
+            
+;-------------------------------------------------------------------------------
+; Interrupt Vectors
+;-------------------------------------------------------------------------------
+            .sect   ".reset"                ; MSP430 RESET Vector
+            .short  RESET
+            
